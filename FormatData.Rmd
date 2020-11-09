@@ -1,0 +1,143 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+```{r}
+library(dplyr)
+```
+
+
+
+
+```{r}
+df <- read.csv('kc_house_data.csv')
+ruca <- read.csv('RUCA2010zipcode.csv')
+
+ruca <- ruca %>% 
+  filter(STATE == 'WA') %>% 
+  select('zipcode' = 'ï..ZIP_CODE',
+         'ruca' = 'RUCA1')
+
+
+df <- df %>% 
+  mutate(
+    date = as.Date(date, '%Y%m%d'),
+    asbestos_range_d = ifelse(1930 <= yr_built & yr_built <= 1977, 1, 0),
+    house_age = 2014 - yr_built
+  ) %>% 
+  filter(
+    date >= as.Date('2014-05-01', '%Y-%m-%d'),
+    date <= as.Date('2014-05-31', '%Y-%m-%d')
+  )
+
+
+
+df <- df %>%
+  left_join(ruca, by ='zipcode')
+
+
+
+
+CityOfSeattle.zips <- 
+    c(98199,
+98174,
+98154,
+98158,
+98164,
+98101,
+98102,
+98103,
+98104,
+98105,
+98106,
+98107,
+98108,
+98109,
+98112,
+98115,
+98116,
+98117,
+98118,
+98119,
+98121,
+98122,
+98125,
+98126,
+98133,
+98134,
+98136,
+98144)
+
+CityOfSeattle <- as.data.frame(table(CityOfSeattle.zips, dnn = list('zipcode')))
+
+
+CityOfSeattle <- CityOfSeattle %>% 
+  mutate(
+    cityOfSeattle =  TRUE,
+    zipcode = as.integer(as.character(zipcode))
+  ) %>% 
+  select(
+    zipcode,
+    city_of_seattle = cityOfSeattle
+  )
+
+df <- df %>%
+  left_join(CityOfSeattle, by='zipcode') %>% 
+  mutate(
+    city_of_seattle = ifelse(is.na(city_of_seattle), 0, 1)
+  )
+
+
+
+write.csv(df, file = 'KingCountyHousingPricesFormatted.csv')
+
+
+```
+
+
+```{python}
+
+
+
+var = 1 if 2 >3 else 2
+print(var)
+
+```
+
+
+```{r}
+summary(df)
+```
+
+
+
+
+
+```{r}
+
+
+
+
+# x <- c('a','b','c','a')
+# x_df <- as.data.frame(table(x, dnn = list("name")), responseName = "freq")
+```
+
+
+```{r}
+table(df$cityOfSeattle)
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
